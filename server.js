@@ -74,7 +74,7 @@ const startReviewApp = async (req, res) => {
     ...defaultLabels,
     ...body.additionalLabels,
   };
-  Labels[`traefik.http.routers.${body.routerName}.rule`] = `Host(\`${body.host}\`)`;
+  Labels[`traefik.http.routers.${body.host.replace('.', '-')}.rule`] = `Host(\`${body.host}\`)`;
 
   const { data } = await docker.post(`http:/containers/create?name=${body.host}`, {
     Hostname: body.host,
