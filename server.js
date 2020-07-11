@@ -81,6 +81,14 @@ const startReviewApp = async (req, res) => {
   logger.info('Old Container removed');
   res.end(`Review-App is running: ${body.host}`);
 };
+const stopReviewApp = async (req, res) => {
+  const body = await json(req);
+  logger.info(`Stop Review App: ${body.host}`);
+  logger.info('Remove Container...');
+  await docker.delete(`http:/containers/${body.host}?force=true`);
+  logger.info('Container removed');
+  res.end(`Review-App is stopped: ${body.host}`);
+};
 
 module.exports = handleErrors(async (req, res) => {
   logger.info(`New Request: ${req.url}`);
@@ -89,6 +97,9 @@ module.exports = handleErrors(async (req, res) => {
   switch (req.url) {
     case '/start':
       await startReviewApp(req, res);
+      break;
+    case '/stop':
+      await stopReviewApp(req, res);
       break;
     default:
       throw createError(404, 'Not found');
