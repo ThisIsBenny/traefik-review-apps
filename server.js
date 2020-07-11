@@ -22,12 +22,11 @@ const logger = pino({
 const headers = {};
 logger.info('Setup Docker Interface');
 // eslint-disable-next-line max-len
-if (process.env.registry_username && process.env.registry_password && process.env.registry_serveraddress) {
+if (process.env.registry_username && process.env.registry_password) {
   logger.info('Set Registry Credentails');
   const registryAuth = Buffer.from(JSON.stringify({
     username: process.env.registry_username,
     password: process.env.registry_password,
-    serveraddress: process.env.registry_serveraddress,
   })).toString('base64');
   headers['X-Registry-Auth'] = registryAuth;
 } else logger.info('No Registry Credentails found');
