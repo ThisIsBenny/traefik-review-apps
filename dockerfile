@@ -13,6 +13,6 @@ COPY package.json package-lock.json /app/
 RUN npm install --no-optional && npm cache clean --force
 
 # Copy app
-COPY index.js /app/
+COPY server.js /app/
 
 CMD npm start
