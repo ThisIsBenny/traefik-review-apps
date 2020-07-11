@@ -72,6 +72,7 @@ const startReviewApp = async (req, res) => {
   logger.info('Pull Image...');
   await docker.post(`http:/images/create?fromImage=${body.image}`);
   logger.info('Create Container...');
+
   const Labels = {
     ...defaultLabels,
     ...body.additionalLabels,
@@ -82,10 +83,12 @@ const startReviewApp = async (req, res) => {
     Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
   }
 
+  const ENV = body.env || [];
   const { data } = await docker.post(`http:/containers/create?name=${body.host}`, {
     Hostname: body.host,
     Image: body.image,
     Labels,
+    ENV,
     NetworkMode: process.env.traefik_network,
   });
   logger.debug(JSON.stringify(data));
