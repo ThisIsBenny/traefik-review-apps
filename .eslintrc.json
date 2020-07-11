@@ -1,0 +1,21 @@
+{
+    "env": {
+        "es2020": true,
+        "node": true,
+        "jest": true
+    },
+    "extends": [
+        "airbnb-base",
+        "plugin:security/recommended"
+    ],
+    "plugins": [
+      "security"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 11
+    },
+    "rules": {
+      "new-cap": 0,
+      "no-underscore-dangle": 0
+    }
+}
