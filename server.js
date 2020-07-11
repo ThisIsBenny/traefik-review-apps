@@ -74,10 +74,10 @@ const startReviewApp = async (req, res) => {
     ...defaultLabels,
     ...body.additionalLabels,
   };
-  Labels[`traefik.http.routers.${body.host.replace('.', '-')}.rule`] = `Host(\`${body.host}\`)`;
+  Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.rule`] = `Host(\`${body.host}\`)`;
   if (process.env.traefik_certresolver) {
-    Labels[`traefik.http.routers.${body.host.replace('.', '-')}.tls`] = 'true';
-    Labels[`traefik.http.routers.${body.host.replace('.', '-')}.tls.certresolver`] = process.env.traefik_certresolver;
+    Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.tls`] = 'true';
+    Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
   }
 
   const { data } = await docker.post(`http:/containers/create?name=${body.host}`, {
