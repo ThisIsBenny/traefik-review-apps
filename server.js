@@ -58,9 +58,9 @@ const checkApiKey = (req) => {
   if (process.env.apikey !== req.headers.authorization) throw createError(401, 'Authentication failed');
 };
 
-const startReviewApp = async (req, res) => {
+const startApp = async (req, res) => {
   const body = await json(req);
-  logger.info(`Start Review App: ${body.image} => ${body.host}`);
+  logger.info(`Start App: ${body.image} => ${body.host}`);
   try {
     logger.info('Remove old Container...');
     await docker.delete(`http:/containers/${body.host}?force=true`);
@@ -96,20 +96,20 @@ const startReviewApp = async (req, res) => {
   logger.info('Start Container...');
   await docker.post(`http:/containers/${data.Id}/start`);
   logger.info('Container started');
-  res.end(`Review-App is running: ${body.host}`);
+  res.end(`App is running: ${body.host}`);
 };
-const stopReviewApp = async (req, res) => {
+const stopApp = async (req, res) => {
   const body = await json(req);
-  logger.info(`Stop Review App: ${body.host}`);
+  logger.info(`Stop App: ${body.host}`);
   logger.info('Remove Container...');
   try {
     await docker.delete(`http:/containers/${body.host}?force=true`);
     logger.info('Container removed');
-    res.end(`Review-App is stopped: ${body.host}`);
+    res.end(`App is stopped: ${body.host}`);
   } catch (error) {
     if (error.response.status === 404) {
-      logger.info(`Review-App ${body.host} not found.`);
-      res.end(`Review-App ${body.host} not found.`);
+      logger.info(`App ${body.host} not found.`);
+      res.end(`App ${body.host} not found.`);
     } else throw error;
   }
 };
@@ -120,10 +120,10 @@ module.exports = handleErrors(async (req, res) => {
 
   switch (req.url) {
     case '/start':
-      await startReviewApp(req, res);
+      await startApp(req, res);
       break;
     case '/stop':
-      await stopReviewApp(req, res);
+      await stopApp(req, res);
       break;
     default:
       throw createError(404, 'Not found');
