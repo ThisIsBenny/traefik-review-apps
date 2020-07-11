@@ -109,8 +109,7 @@ const stopReviewApp = async (req, res) => {
     if (error.response.status === 404) {
       logger.info(`Review-App ${body.host} not found.`);
       res.end(`Review-App ${body.host} not found.`);
-    }
-    else throw error;
+    } else throw error;
   }
 };
 
