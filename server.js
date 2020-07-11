@@ -62,10 +62,12 @@ const startReviewApp = async (req, res) => {
   const body = await json(req);
   logger.info(`Start Review App: ${body.image} => ${body.host}`);
   try {
-    logger.info('Rename old Container');
-    await docker.post(`http:/containers/${body.host}/rename?name=${body.host}-old`);
+    logger.info('Remove old Container...');
+    await docker.delete(`http:/containers/${body.host}?force=true`);
+    logger.info('Old Container removed');
   } catch (error) {
-    logger.warn(error.response.data.message);
+    if (error.response.status === 404) logger.info(`Old Container ${body.host} not found.`);
+    else throw error;
   }
   logger.info('Pull Image...');
   await docker.post(`http:/images/create?fromImage=${body.image}`);
@@ -91,14 +93,6 @@ const startReviewApp = async (req, res) => {
   logger.info('Start Container...');
   await docker.post(`http:/containers/${data.Id}/start`);
   logger.info('Container started');
-  logger.info('Remove old Container...');
-  try {
-    await docker.delete(`http:/containers/${body.host}-old?force=true`);
-  } catch (error) {
-    if (error.response.status === 404) logger.warn(error.response.data.message);
-    else throw error;
-  }
-  logger.info('Old Container removed');
   res.end(`Review-App is running: ${body.host}`);
 };
 const stopReviewApp = async (req, res) => {
