@@ -99,7 +99,7 @@ const startReviewApp = async (req, res) => {
     else throw error;
   }
   logger.info('Old Container removed');
-  res.end({ message: `Review-App is running: ${body.host}` });
+  res.end(`Review-App is running: ${body.host}`);
 };
 const stopReviewApp = async (req, res) => {
   const body = await json(req);
@@ -108,11 +108,11 @@ const stopReviewApp = async (req, res) => {
   try {
     await docker.delete(`http:/containers/${body.host}?force=true`);
     logger.info('Container removed');
-    res.end({ message: `Review-App is stopped: ${body.host}` });
+    res.end(`Review-App is stopped: ${body.host}`);
   } catch (error) {
     if (error.response.status === 404) {
       logger.info(`Review-App ${body.host} not found.`);
-      res.end({ message: `Review-App ${body.host} not found.` });
+      res.end(`Review-App ${body.host} not found.`);
     } else throw error;
   }
 };
