@@ -45,7 +45,7 @@ const handleErrors = (fn) => async (req, res) => {
     return await fn(req, res);
   } catch (err) {
     logger.debug(JSON.stringify(err));
-    if (err.response.data) logger.error(JSON.stringify(err.response.data));
+    if (err.response && err.response.data) logger.error(JSON.stringify(err.response.data));
     logger.info(`[${err.statusCode}] ${err.message}`);
     send(res, 500, { message: err.message });
   }
