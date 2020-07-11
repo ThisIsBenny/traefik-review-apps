@@ -2,6 +2,7 @@ const pino = require('pino');
 const axios = require('axios');
 const { createError, json, send } = require('micro');
 
+if (!process.env.apikey) throw new Error('ENV apikey is missing!');
 if (!process.env.traefik_network) throw new Error('ENV traefik_network is missing!');
 
 /*
