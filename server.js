@@ -6,7 +6,7 @@ if (!process.env.apikey) throw new Error('ENV apikey is missing!');
 if (!process.env.traefik_network) throw new Error('ENV traefik_network is missing!');
 
 const defaultLabels = {
-  'traefik.enable': 'true',
+  'traefik.enable': true,
 };
 
 /*
@@ -75,6 +75,10 @@ const startReviewApp = async (req, res) => {
     ...body.additionalLabels,
   };
   Labels[`traefik.http.routers.${body.host.replace('.', '-')}.rule`] = `Host(\`${body.host}\`)`;
+  if (process.env.traefik_certresolver) {
+    Labels[`traefik.http.routers.${body.host.replace('.', '-')}.tls`] = true;
+    Labels[`traefik.http.routers.${body.host.replace('.', '-')}.tls.certresolver`] = process.env.traefik_certresolver;
+  }
 
   const { data } = await docker.post(`http:/containers/create?name=${body.host}`, {
     Hostname: body.host,
