@@ -6,7 +6,7 @@ if (!process.env.apikey) throw new Error('ENV apikey is missing!');
 if (!process.env.traefik_network) throw new Error('ENV traefik_network is missing!');
 
 const defaultLabels = {
-  'traefik.enable': true,
+  'traefik.enable': 'true',
 };
 
 /*
@@ -45,7 +45,8 @@ const handleErrors = (fn) => async (req, res) => {
     return await fn(req, res);
   } catch (err) {
     logger.debug(JSON.stringify(err));
-    logger.error(`[${err.statusCode}] ${err.message}`);
+    if (err.response.data) logger.error(JSON.stringify(err.response.data));
+    logger.info(`[${err.statusCode}] ${err.message}`);
     send(res, 500, { message: err.message });
   }
 };

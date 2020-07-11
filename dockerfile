@@ -16,3 +16,5 @@ RUN npm install --no-optional && npm cache clean --force
 COPY server.js /app/
 
 CMD npm start
+
+EXPOSE 3000
