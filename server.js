@@ -60,13 +60,13 @@ const checkApiKey = (req) => {
 
 const startApp = async (req, res) => {
   const body = await json(req);
-  logger.info(`Start App: ${body.image} => ${body.host}`);
+  logger.info(`Start App: ${body.image} => ${body.hostname}`);
   try {
     logger.info('Remove old Container...');
-    await docker.delete(`http:/containers/${body.host}?force=true`);
+    await docker.delete(`http:/containers/${body.hostname}?force=true`);
     logger.info('Old Container removed');
   } catch (error) {
-    if (error.response.status === 404) logger.info(`Old Container ${body.host} not found.`);
+    if (error.response.status === 404) logger.info(`Old Container ${body.hostname} not found.`);
     else throw error;
   }
   logger.info('Pull Image...');
@@ -77,15 +77,15 @@ const startApp = async (req, res) => {
     ...defaultLabels,
     ...body.additionalLabels,
   };
-  Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.rule`] = `Host(\`${body.host}\`)`;
+  Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.rule`] = `Host(\`${body.hostname}\`)`;
   if (process.env.traefik_certresolver) {
-    Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.tls`] = 'true';
-    Labels[`traefik.http.routers.${body.host.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
+    Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls`] = 'true';
+    Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
   }
 
   const ENV = body.env || [];
-  const { data } = await docker.post(`http:/containers/create?name=${body.host}`, {
-    Hostname: body.host,
+  const { data } = await docker.post(`http:/containers/create?name=${body.hostname}`, {
+    Hostname: body.hostname,
     Image: body.image,
     Labels,
     ENV,
@@ -96,20 +96,20 @@ const startApp = async (req, res) => {
   logger.info('Start Container...');
   await docker.post(`http:/containers/${data.Id}/start`);
   logger.info('Container started');
-  res.end(`App is running: ${body.host}`);
+  res.end(`App is running: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
   const body = await json(req);
-  logger.info(`Stop App: ${body.host}`);
+  logger.info(`Stop App: ${body.hostname}`);
   logger.info('Remove Container...');
   try {
-    await docker.delete(`http:/containers/${body.host}?force=true`);
+    await docker.delete(`http:/containers/${body.hostname}?force=true`);
     logger.info('Container removed');
-    res.end(`App is stopped: ${body.host}`);
+    res.end(`App is stopped: ${body.hostname}`);
   } catch (error) {
     if (error.response.status === 404) {
-      logger.info(`App ${body.host} not found.`);
-      res.end(`App ${body.host} not found.`);
+      logger.info(`App ${body.hostname} not found.`);
+      res.end(`App ${body.hostname} not found.`);
     } else throw error;
   }
 };
