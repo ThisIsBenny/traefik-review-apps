@@ -83,12 +83,12 @@ const startApp = async (req, res) => {
     Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
   }
 
-  const ENV = body.env || [];
+  const Env = body.env || [];
   const { data } = await docker.post(`http:/containers/create?name=${body.hostname}`, {
     Hostname: body.hostname,
     Image: body.image,
     Labels,
-    ENV,
+    Env,
     NetworkMode: process.env.traefik_network,
   });
   logger.debug(JSON.stringify(data));
