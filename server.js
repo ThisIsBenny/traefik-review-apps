@@ -5,6 +5,10 @@ const { createError, json, send } = require('micro');
 if (!process.env.apikey) throw new Error('ENV apikey is missing!');
 if (!process.env.traefik_network) throw new Error('ENV traefik_network is missing!');
 
+const defaultLabels = {
+  'traefik.enable': true,
+};
+
 /*
   Setup Logger
 */
@@ -66,10 +70,16 @@ const startReviewApp = async (req, res) => {
   logger.info('Pull Image...');
   await docker.post(`http:/images/create?fromImage=${body.image}`);
   logger.info('Create Container...');
+  const Labels = {
+    ...defaultLabels,
+    ...body.additionalLabels,
+  };
+  Labels[`traefik.http.routers.${body.routerName}.rule`] = `Host(\`${body.host}\`)`;
+
   const { data } = await docker.post(`http:/containers/create?name=${body.host}`, {
     Hostname: body.host,
     Image: body.image,
-    Labels: body.labels,
+    Labels,
     NetworkMode: process.env.traefik_network,
   });
   logger.debug(JSON.stringify(data));
@@ -78,7 +88,12 @@ const startReviewApp = async (req, res) => {
   await docker.post(`http:/containers/${data.Id}/start`);
   logger.info('Container started');
   logger.info('Remove old Container...');
-  await docker.delete(`http:/containers/${body.host}-old?force=true`);
+  try {
+    await docker.delete(`http:/containers/${body.host}-old?force=true`);
+  } catch (error) {
+    if (error.response.status === 404) logger.warn(error.response.data.message);
+    else throw error;
+  }
   logger.info('Old Container removed');
   res.end(`Review-App is running: ${body.host}`);
 };
@@ -86,9 +101,17 @@ const stopReviewApp = async (req, res) => {
   const body = await json(req);
   logger.info(`Stop Review App: ${body.host}`);
   logger.info('Remove Container...');
-  await docker.delete(`http:/containers/${body.host}?force=true`);
-  logger.info('Container removed');
-  res.end(`Review-App is stopped: ${body.host}`);
+  try {
+    await docker.delete(`http:/containers/${body.host}?force=true`);
+    logger.info('Container removed');
+    res.end(`Review-App is stopped: ${body.host}`);
+  } catch (error) {
+    if (error.response.status === 404) {
+      logger.info(`Review-App ${body.host} not found.`);
+      res.end(`Review-App ${body.host} not found.`);
+    }
+    else throw error;
+  }
 };
 
 module.exports = handleErrors(async (req, res) => {
