@@ -36,6 +36,7 @@ const stopSchema = Joi.object({
 const logger = pino({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
 });
+logger.info(`Node-ENV: ${process.env.NODE_ENV}`);
 
 /*
   Setup Docker Interface
@@ -65,12 +66,11 @@ const handleErrors = (fn) => async (req, res) => {
   try {
     return await fn(req, res);
   } catch (err) {
-    logger.error(JSON.stringify(err));
+    logger.debug(JSON.stringify(err));
     if (err.response && err.response.data) logger.error(JSON.stringify(err.response.data));
     logger.info(`[${err.statusCode}] ${err.message}`);
     logger.debug(err.name);
     if (err.name === 'ValidationError') {
-      logger.debug(JSON.stringify(err));
       send(res, 400, { message: err.message, errors: err.details });
     } else {
       send(res, err.statusCode || 500, { message: err.message });
