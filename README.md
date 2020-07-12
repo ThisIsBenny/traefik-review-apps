@@ -13,7 +13,7 @@ If traefik_certresolver is set, tls will be set to true.
 
 ```YAML
 traefik-review-apps:
-    image: registry.gitlab.com/benny/traefik-review-apps:latest
+    image: registry.gitlab.com/benny/traefik-review-apps:stable
     restart: on-failure
     hostname: deploy.example.com
     environment:
