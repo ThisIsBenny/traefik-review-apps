@@ -17,6 +17,7 @@ const startSchema = Joi.object({
   image: Joi.string()
     .required(),
   hostname: Joi.string()
+    .hostname()
     .required(),
   env: [
     Joi.string(),
@@ -26,6 +27,7 @@ const startSchema = Joi.object({
 
 const stopSchema = Joi.object({
   hostname: Joi.string()
+    .hostname()
     .required(),
 }).required();
 
