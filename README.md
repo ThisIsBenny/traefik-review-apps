@@ -37,7 +37,7 @@ traefik-review-apps:
 
 ### Start a new App
 ```bash
-curl -s -X POST 'https://deploy.example.com/start' \
+curl -X POST 'https://deploy.example.com/start' \
 -H 'Authorization: TopSecret' \
 -H 'Content-Type: application/json' \
 --data-raw '{
@@ -49,7 +49,7 @@ curl -s -X POST 'https://deploy.example.com/start' \
 
 ### Stop a App
 ```bash
-curl -s -X POST 'https://deploy.example.com/stop' \
+curl -X POST 'https://deploy.example.com/stop' \
 -H 'Authorization: TopSecret' \
 -H 'Content-Type: application/json' \
 --data-raw '{
