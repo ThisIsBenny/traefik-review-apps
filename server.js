@@ -20,9 +20,7 @@ const startSchema = Joi.object({
   hostname: Joi.string()
     .hostname()
     .required(),
-  env: [
-    Joi.string(),
-  ],
+  env: Joi.array().items(Joi.string()),
   additionalLabels: Joi.object(),
 }).required();
 
