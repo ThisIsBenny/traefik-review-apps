@@ -51,3 +51,16 @@ release_stable:
     - docker push $CI_REGISTRY_IMAGE:stable
   only:
     - /^v([0-9]+)(\.)([0-9]+)(\.)([0-9]+)$/
+
+release_unstable:
+  stage: release
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:unstable
+    - docker push $CI_REGISTRY_IMAGE:unstable
+  only:
+    - /^v([0-9]+)(\.)([0-9]+)(\.)([0-9]+)-(alpha|beta)\.([0-9]+)$/
