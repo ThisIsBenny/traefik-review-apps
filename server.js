@@ -1,5 +1,6 @@
 const pino = require('pino');
 const axios = require('axios');
+const Joi = require('@hapi/joi');
 const { createError, json, send } = require('micro');
 
 if (!process.env.apikey) throw new Error('ENV apikey is missing!');
@@ -8,6 +9,25 @@ if (!process.env.traefik_network) throw new Error('ENV traefik_network is missin
 const defaultLabels = {
   'traefik.enable': 'true',
 };
+
+/*
+  Define Schemas
+*/
+const startSchema = Joi.object({
+  image: Joi.string()
+    .required(),
+  hostname: Joi.string()
+    .required(),
+  env: [
+    Joi.string(),
+  ],
+  additionalLabels: Joi.object(),
+}).required();
+
+const stopSchema = Joi.object({
+  hostname: Joi.string()
+    .required(),
+}).required();
 
 /*
   Setup Logger
@@ -47,7 +67,13 @@ const handleErrors = (fn) => async (req, res) => {
     logger.error(JSON.stringify(err));
     if (err.response && err.response.data) logger.error(JSON.stringify(err.response.data));
     logger.info(`[${err.statusCode}] ${err.message}`);
-    send(res, 500, { message: err.message });
+    logger.debug(err.name);
+    if (err.name === 'ValidationError') {
+      logger.debug(JSON.stringify(err));
+      send(res, 400, { message: err.message, errors: err.details });
+    } else {
+      send(res, err.statusCode || 500, { message: err.message });
+    }
   }
 };
 
@@ -59,7 +85,7 @@ const checkApiKey = (req) => {
 };
 
 const startApp = async (req, res) => {
-  const body = await json(req);
+  const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
   logger.info(`Start App: ${body.image} => ${body.hostname}`);
   try {
     logger.info('Remove old Container...');
@@ -99,7 +125,7 @@ const startApp = async (req, res) => {
   res.end(`App is running: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
-  const body = await json(req);
+  const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
   logger.info(`Stop App: ${body.hostname}`);
   logger.info('Remove Container...');
   try {
