@@ -15,6 +15,7 @@ const defaultLabels = {
 */
 const startSchema = Joi.object({
   image: Joi.string()
+    .regex(new RegExp(/^[^<>;\\]*$/))
     .required(),
   hostname: Joi.string()
     .hostname()
