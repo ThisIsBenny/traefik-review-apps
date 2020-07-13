@@ -81,7 +81,7 @@ const handleErrors = (fn) => async (req, res) => {
     if (err.name === 'ValidationError') {
       send(res, 400, { message: err.message, errors: err.details });
     } else {
-      plugins.failure(err);
+      plugins.failure(err, await json(req));
       send(res, err.statusCode || 500, { message: err.message });
     }
   }
@@ -106,9 +106,14 @@ const startApp = async (req, res) => {
     if (error.response.status === 404) logger.info(`Old Container ${body.hostname} not found.`);
     else throw error;
   }
-  logger.info('Pull Image...');
-  await docker.post(`http:/images/create?fromImage=${body.image}`);
-  logger.info('Create Container...');
+  try {
+    logger.info('Pull Image...');
+    await docker.post(`http:/images/create?fromImage=${body.image}`);
+    logger.info('Create Container...');
+  } catch (error) {
+    if (error.response.status === 404) throw createError(404, `Image ${body.image} not found.`, error);
+    else throw error;
+  }
 
   const Labels = {
     ...defaultLabels,

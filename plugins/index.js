@@ -7,7 +7,12 @@ const bootstrap = () => {
   process.env.plugins.split(',').forEach((e) => {
     try {
       global.logger.info(`Register ${e} plugin`);
-      const plugin = require(`./${e}.plugin`); // eslint-disable-line security/detect-non-literal-require, global-require, import/no-dynamic-require
+      const plugin = require(`./${String(e)}.plugin`); // eslint-disable-line security/detect-non-literal-require, global-require, import/no-dynamic-require
+
+      plugin.requiredEnvs.forEach((env) => {
+        if (!process.env[String(env)]) throw new Error(`Required ENV ${env} for plugin ${e} is missing!`);
+      });
+
       if (typeof plugin.failure === 'function') {
         global.logger.debug(`Register failure function for ${e.trim()} plugin`);
         failurePlugins.push(plugin.failure);
@@ -21,16 +26,15 @@ const bootstrap = () => {
         postdeploymentPlugins.push(plugin.postdeployment);
       }
     } catch (error) {
-      global.logger.warn(`${e} Plugin can't be registered`);
-      global.logger.error(error);
+      global.logger.warn(`${e} Plugin can't be registered: ${error}`);
     }
   });
 };
 
-const failure = (error) => {
+const failure = (error, reqBody) => {
   try {
     failurePlugins.forEach((p) => {
-      p(error);
+      p(error, reqBody);
     });
   } catch (e) {
     global.logger.error(e);
