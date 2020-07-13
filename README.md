@@ -28,9 +28,9 @@ traefik-review-apps:
       traefik_certresolver: mytlschallenge
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik-review-apps:.rule=Host(`deploy.example.com`)
-      - traefik.http.routers.traefik-review-apps:.tls=true
-      - traefik.http.routers.traefik-review-apps:.tls.certresolver=mytlschallenge
+      - traefik.http.routers.traefik-review-apps.rule=Host(`deploy.example.com`)
+      - traefik.http.routers.traefik-review-apps.tls=true
+      - traefik.http.routers.traefik-review-apps.tls.certresolver=mytlschallenge
     networks:
       - traefik-network
     volumes:
