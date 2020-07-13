@@ -1,4 +1,8 @@
-_**Traefik-Review-Apps** — New Review Apps on Demand_
+_**Traefik-Review-Apps** — Review Apps on Demand_
+
+With Traefik-Review-Apps you have the possibilty to deploy your review apps on demand.
+Send the Docker Image Name and the Hostname for the Review App to Traefik-Review-Apps.
+Traefik-Review-Apps will pull the image, create a Container with Traefik Router-Settings and start the new Container.
 
 ## Feature
 * Deploy your Review App Docker Image via POST Request
