@@ -9,15 +9,15 @@ const bootstrap = () => {
       global.logger.info(`Register ${e} plugin`);
       const plugin = require(`./${e}.plugin`); // eslint-disable-line security/detect-non-literal-require, global-require, import/no-dynamic-require
       if (typeof plugin.failure === 'function') {
-        global.logger.debug(`Register failure function for ${e} plugin`);
+        global.logger.debug(`Register failure function for ${e.trim()} plugin`);
         failurePlugins.push(plugin.failure);
       }
       if (typeof plugin.predeployment === 'function') {
-        global.logger.debug(`Register predeployment function for ${e} plugin`);
+        global.logger.debug(`Register predeployment function for ${e.trim()} plugin`);
         predeploymentPlugins.push(plugin.predeployment);
       }
       if (typeof plugin.postdeployment === 'function') {
-        global.logger.debug(`Register postdeployment function for ${e} plugin`);
+        global.logger.debug(`Register postdeployment function for ${e.trim()} plugin`);
         postdeploymentPlugins.push(plugin.postdeployment);
       }
     } catch (error) {

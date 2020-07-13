@@ -1,5 +1,5 @@
 const failure = (error) => {
-  global.logger.debug(`Dummy Plugin: Erro => ${error}`);
+  global.logger.debug(`Dummy Plugin: Error => ${error}`);
 };
 const predeployment = ({ hostname, image }) => {
   global.logger.info('Execute dummy plugin (predeployment)');
