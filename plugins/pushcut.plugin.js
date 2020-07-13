@@ -19,7 +19,7 @@ const predeployment = async ({ hostname, image }) => {
 const postdeployment = async ({ hostname, image }) => {
   global.logger.info('Execute pushcut plugin (postdeployment)');
   await axios.post(process.env.plugins_pushcut_url, {
-    title: '🚚 Deployment Done',
+    title: '🚚 Deployment done',
     text: `The Deployment of the Image '${image}' to '${hostname}' is done.`,
     input: `http://${hostname}`,
   });
