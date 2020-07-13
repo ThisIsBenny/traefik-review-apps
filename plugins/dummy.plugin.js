@@ -1,4 +1,4 @@
-const failure = (error) => {
+const failure = (error, { hostname, image }) => {
   global.logger.debug(`Dummy Plugin: Error => ${error}`);
 };
 const predeployment = ({ hostname, image }) => {

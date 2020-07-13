@@ -81,7 +81,7 @@ const handleErrors = (fn) => async (req, res) => {
     if (err.name === 'ValidationError') {
       send(res, 400, { message: err.message, errors: err.details });
     } else {
-      plugins.failure(err);
+      plugins.failure(err, await json(req));
       send(res, err.statusCode || 500, { message: err.message });
     }
   }

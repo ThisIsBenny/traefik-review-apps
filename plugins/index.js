@@ -31,10 +31,10 @@ const bootstrap = () => {
   });
 };
 
-const failure = (error) => {
+const failure = (error, reqBody) => {
   try {
     failurePlugins.forEach((p) => {
-      p(error);
+      p(error, reqBody);
     });
   } catch (e) {
     global.logger.error(e);
