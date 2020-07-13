@@ -44,7 +44,7 @@ logger.info(`Node-ENV: ${process.env.NODE_ENV}`);
 /*
   Bootstrap Plugin Module
 */
-plugins.bootstrap(logger);
+plugins.bootstrap();
 
 /*
   Setup Docker Interface
