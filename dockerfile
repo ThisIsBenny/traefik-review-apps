@@ -14,6 +14,7 @@ RUN npm install --no-optional && npm cache clean --force
 
 # Copy app
 COPY server.js /app/
+COPY ./plugins /app/plugins
 
 CMD npm start
 

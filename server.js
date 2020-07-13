@@ -3,6 +3,8 @@ const axios = require('axios');
 const Joi = require('@hapi/joi');
 const { createError, json, send } = require('micro');
 
+const plugins = require('./plugins');
+
 if (!process.env.apikey) throw new Error('ENV apikey is missing!');
 if (!process.env.traefik_network) throw new Error('ENV traefik_network is missing!');
 
@@ -36,7 +38,13 @@ const stopSchema = Joi.object({
 const logger = pino({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
 });
+global.logger = logger;
 logger.info(`Node-ENV: ${process.env.NODE_ENV}`);
+
+/*
+  Bootstrap Plugin Module
+*/
+plugins.bootstrap(logger);
 
 /*
   Setup Docker Interface
@@ -73,6 +81,7 @@ const handleErrors = (fn) => async (req, res) => {
     if (err.name === 'ValidationError') {
       send(res, 400, { message: err.message, errors: err.details });
     } else {
+      plugins.failure(err);
       send(res, err.statusCode || 500, { message: err.message });
     }
   }
@@ -87,6 +96,7 @@ const checkApiKey = (req) => {
 
 const startApp = async (req, res) => {
   const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
+  plugins.pre(body);
   logger.info(`Start App: ${body.image} => ${body.hostname}`);
   try {
     logger.info('Remove old Container...');
@@ -123,6 +133,7 @@ const startApp = async (req, res) => {
   logger.info('Start Container...');
   await docker.post(`http:/containers/${data.Id}/start`);
   logger.info('Container started');
+  plugins.post(body);
   res.end(`App is running: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
