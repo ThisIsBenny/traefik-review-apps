@@ -106,9 +106,14 @@ const startApp = async (req, res) => {
     if (error.response.status === 404) logger.info(`Old Container ${body.hostname} not found.`);
     else throw error;
   }
-  logger.info('Pull Image...');
-  await docker.post(`http:/images/create?fromImage=${body.image}`);
-  logger.info('Create Container...');
+  try {
+    logger.info('Pull Image...');
+    await docker.post(`http:/images/create?fromImage=${body.image}`);
+    logger.info('Create Container...');
+  } catch (error) {
+    if (error.response.status === 404) throw createError(404, `Image ${body.image} not found.`, error);
+    else throw error;
+  }
 
   const Labels = {
     ...defaultLabels,
