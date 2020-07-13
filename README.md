@@ -1,12 +1,14 @@
 _**Traefik-Review-Apps** — New Review Apps on Demand_
 
 ## Feature
+
 * Deploy your Review App Docker Image via POST Request
 * Add new Docker Image automaticly to to Treafik Network
 * Send ENV and additional Labels with the POST Request
 * Stop and remove Docker Images by Hostname
 
 ## Installalation
+
 This Example shows how traefik-review-apps can be installed via Docker-Compose.
 The environment variables registry_username, registry_password and traefik_certresolver are optional.
 If traefik_certresolver is set, tls will be set to true.
@@ -34,17 +36,22 @@ traefik-review-apps:
 ```
 
 ### Plugins
+
 traefik-review-apps supports various plugins, which are executed on failure or before and after a deployment.
-To use a plugin, the plugin name must be added to the ENV `plugins` (comma separated list). For example: `plugins=pushcut,msteams`
+To use a plugin, the plugin name must be added to the environment variable `plugins` (comma separated list). For example: `plugins=pushcut,msteams`
 
 **the following plugins are available:**
-* tbd..
-  * Config: tbd..
+
+* pushcut
+  * environment variables:
+    * `plugins_pushcut_url` (required): PushCut URL
 
 ## Usage
 
 ### Start a new App
+
 **Simple:**
+
 ```bash
 curl -X POST 'https://deploy.example.com/start' \
 -H 'Authorization: TopSecret' \
@@ -56,6 +63,7 @@ curl -X POST 'https://deploy.example.com/start' \
 ```
 
 **With ENVs:**
+
 ```bash
 curl -X POST 'https://deploy.example.com/start' \
 -H 'Authorization: TopSecret' \
@@ -69,6 +77,7 @@ curl -X POST 'https://deploy.example.com/start' \
 ```
 
 ### Stop a App
+
 ```bash
 curl -X POST 'https://deploy.example.com/stop' \
 -H 'Authorization: TopSecret' \
