@@ -33,9 +33,18 @@ traefik-review-apps:
       - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+### Plugins
+traefik-review-apps supports various plugins, which are executed on failure or before and after a deployment.
+To use a plugin, the plugin name must be added to the ENV `plugins` (comma separated list). For example: `plugins=pushcut,msteams`
+
+**the following plugins are available:**
+* tbd..
+  * Config: tbd..
+
 ## Usage
 
 ### Start a new App
+**Simple:**
 ```bash
 curl -X POST 'https://deploy.example.com/start' \
 -H 'Authorization: TopSecret' \
@@ -43,6 +52,18 @@ curl -X POST 'https://deploy.example.com/start' \
 --data-raw '{
     "image": "cool-docker-app:feature-new-login",
     "hostname": "feature-new-login.example.com"
+}'
+```
+
+**With ENVs:**
+```bash
+curl -X POST 'https://deploy.example.com/start' \
+-H 'Authorization: TopSecret' \
+-H 'Content-Type: application/json' \
+--data-raw '{
+    "image": "cool-docker-app:feature-new-login",
+    "hostname": "feature-new-login.example.com"
+    "env": ["DATABASE_URI=https://...", "DATADOG_APIKEY=1234"]
 }'
 
 ```
