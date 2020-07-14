@@ -7,8 +7,8 @@ const bootstrap = () => {
   if (process.env.plugins) {
     process.env.plugins.split(',').forEach((e) => {
       try {
-        global.logger.info(`Register ${e} plugin`);
-        const plugin = require(`./${String(e)}.plugin`); // eslint-disable-line security/detect-non-literal-require, global-require, import/no-dynamic-require
+        global.logger.info(`Register ${e.trim()} plugin`);
+        const plugin = require(`./${String(e).trim()}.plugin`); // eslint-disable-line security/detect-non-literal-require, global-require, import/no-dynamic-require
 
         plugin.requiredEnvs.forEach((env) => {
           if (!process.env[String(env)]) throw new Error(`Required ENV ${env} for plugin ${e} is missing!`);
