@@ -225,9 +225,11 @@ module.exports = handleErrors(async (req, res) => {
 
   switch (req.url) {
     case '/start':
+    case '/deploy':
       await startApp(req, res);
       break;
     case '/stop':
+    case '/teardown':
       await stopApp(req, res);
       break;
     default:
