@@ -77,7 +77,6 @@ const handleErrors = (fn) => async (req, res) => {
     logger.debug(JSON.stringify(err));
     if (err.response && err.response.data) logger.error(JSON.stringify(err.response.data));
     logger.info(`[${err.statusCode}] ${err.message}`);
-    logger.debug(err.name);
     if (err.name === 'ValidationError') {
       send(res, 400, { message: err.message, errors: err.details });
     } else {
@@ -97,49 +96,90 @@ const checkApiKey = (req) => {
 const startApp = async (req, res) => {
   const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
   plugins.pre(body);
-  logger.info(`Start App: ${body.image} => ${body.hostname}`);
+  logger.info(`Start Deployment: '${body.image}' => '${body.hostname}'`);
+  // Check if Container for given Hostname already exists
+  let blueGreenDeployment = false;
   try {
-    logger.info('Remove old Container...');
+    const oldContainer = (await docker.get(`http:/containers/${body.hostname}/json`)).data;
+    logger.info(`Container for '${body.hostname}' already exists. Existing Container will be replaced.`);
+    logger.debug(`Old Container Image => '${oldContainer.Image.replace('sha256:', '')}'`);
+    blueGreenDeployment = true;
+  } catch (error) {
+    if (error.response.status === 404) {
+      logger.info(`No existing Container for '${body.hostname}' found. No Replacement needed.`);
+    } else throw error;
+  }
+  // Rename existing Container
+  if (blueGreenDeployment) {
+    logger.info('Rename existing Container.');
+    await docker.post(`http:/containers/${body.hostname}/rename?name=${body.hostname}-old`);
+  }
+  // Pull Image and create container
+  try {
+    // Pull Image
+    try {
+      logger.info(`Pull Image '${body.image}'.`);
+      await docker.post(`http:/images/create?fromImage=${body.image}`);
+      logger.info(`Create Container '${body.hostname}'.`);
+    } catch (error) {
+      if (error.response.status === 404) throw createError(404, `Image ${body.image} not found.`, error);
+      else throw error;
+    }
+    // Create Container
+    const Labels = {
+      ...defaultLabels,
+      ...body.additionalLabels,
+    };
+    Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.rule`] = `Host(\`${body.hostname}\`)`;
+    if (process.env.traefik_certresolver) {
+      Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls`] = 'true';
+      Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
+    }
+    const Env = body.env || [];
+    const { data } = await docker.post(`http:/containers/create?name=${body.hostname}`, {
+      Hostname: body.hostname,
+      Image: body.image,
+      Labels,
+      Env,
+      NetworkMode: process.env.traefik_network,
+    });
+    logger.debug(JSON.stringify(data));
+    logger.info(`Container created: '${body.hostname}'.`);
+  } catch (error) {
+    logger.error('Creating the new Container failed!');
+    if (blueGreenDeployment) {
+      // Rollback
+      logger.warn('Already existing Container will be renamed back.');
+      await docker.post(`http:/containers/${body.hostname}-old/rename?name=${body.hostname}`);
+    }
+    throw createError(500, `Creating the new Container '${body.hostname}' failed!`, error);
+  }
+
+  try {
+    logger.info(`Start Container '${body.hostname}'.`);
+    await docker.post(`http:/containers/${body.hostname}/start`);
+  } catch (error) {
+    logger.error('Starting new Container failed!');
+    logger.warn('New created Container will be removed.');
     await docker.delete(`http:/containers/${body.hostname}?force=true`);
-    logger.info('Old Container removed');
-  } catch (error) {
-    if (error.response.status === 404) logger.info(`Old Container ${body.hostname} not found.`);
-    else throw error;
-  }
-  try {
-    logger.info('Pull Image...');
-    await docker.post(`http:/images/create?fromImage=${body.image}`);
-    logger.info('Create Container...');
-  } catch (error) {
-    if (error.response.status === 404) throw createError(404, `Image ${body.image} not found.`, error);
-    else throw error;
+    if (blueGreenDeployment) {
+      // Rollback
+      logger.warn('Already existing Container will be renamed back.');
+      await docker.post(`http:/containers/${body.hostname}-old/rename?name=${body.hostname}`);
+    }
+    throw createError(500, `Starting Container '${body.hostname}' failed`, error);
   }
 
-  const Labels = {
-    ...defaultLabels,
-    ...body.additionalLabels,
-  };
-  Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.rule`] = `Host(\`${body.hostname}\`)`;
-  if (process.env.traefik_certresolver) {
-    Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls`] = 'true';
-    Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
+  if (blueGreenDeployment) {
+    try {
+      logger.info(`Remove old Container ${body.hostname}-old.`);
+      await docker.delete(`http:/containers/${body.hostname}-old?force=true`);
+    } catch (error) {
+      logger.warn(`Removing old Container '${body.hostname}-old' failed: ${error}`);
+    }
   }
-
-  const Env = body.env || [];
-  const { data } = await docker.post(`http:/containers/create?name=${body.hostname}`, {
-    Hostname: body.hostname,
-    Image: body.image,
-    Labels,
-    Env,
-    NetworkMode: process.env.traefik_network,
-  });
-  logger.debug(JSON.stringify(data));
-  logger.info(`Container created: ${data.Id}`);
-  logger.info('Start Container...');
-  await docker.post(`http:/containers/${data.Id}/start`);
-  logger.info('Container started');
   plugins.post(body);
-  res.end(`App is running: ${body.hostname}`);
+  res.end(`Deployment is done: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
   const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
