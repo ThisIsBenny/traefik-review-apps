@@ -24,12 +24,14 @@ const startSchema = Joi.object({
     .required(),
   env: Joi.array().items(Joi.string()),
   additionalLabels: Joi.object(),
+  keepImage: Joi.boolean().default(false),
 }).required();
 
 const stopSchema = Joi.object({
   hostname: Joi.string()
     .hostname()
     .required(),
+  keepImage: Joi.boolean().default(false),
 }).required();
 
 /*
@@ -95,14 +97,14 @@ const checkApiKey = (req) => {
 
 const startApp = async (req, res) => {
   const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
+  logger.debug(JSON.stringify(body));
   plugins.pre(body);
   logger.info(`Start Deployment: '${body.image}' => '${body.hostname}'`);
   // Check if Container for given Hostname already exists
   let blueGreenDeployment = false;
   try {
-    const oldContainer = (await docker.get(`http:/containers/${body.hostname}/json`)).data;
+    await docker.get(`http:/containers/${body.hostname}/json`);
     logger.info(`Container for '${body.hostname}' already exists. Existing Container will be replaced.`);
-    logger.debug(`Old Container Image => '${oldContainer.Image.replace('sha256:', '')}'`);
     blueGreenDeployment = true;
   } catch (error) {
     if (error.response.status === 404) {
@@ -136,14 +138,13 @@ const startApp = async (req, res) => {
       Labels[`traefik.http.routers.${body.hostname.replace(/\./g, '-')}.tls.certresolver`] = process.env.traefik_certresolver;
     }
     const Env = body.env || [];
-    const { data } = await docker.post(`http:/containers/create?name=${body.hostname}`, {
+    await docker.post(`http:/containers/create?name=${body.hostname}`, {
       Hostname: body.hostname,
       Image: body.image,
       Labels,
       Env,
       NetworkMode: process.env.traefik_network,
     });
-    logger.debug(JSON.stringify(data));
     logger.info(`Container created: '${body.hostname}'.`);
   } catch (error) {
     logger.error('Creating the new Container failed!');
@@ -172,20 +173,42 @@ const startApp = async (req, res) => {
 
   if (blueGreenDeployment) {
     try {
+      const { data: newContainer } = await docker.get(`http:/containers/${body.hostname}/json`);
+      const { data: oldContainer } = await docker.get(`http:/containers/${body.hostname}-old/json`);
       logger.info(`Remove old Container ${body.hostname}-old.`);
       await docker.delete(`http:/containers/${body.hostname}-old?force=true`);
+
+      if (body.keepImage === false) {
+        // Remove Image of old Container if diff to Image of new Container
+        logger.debug(`Ìmage of new Container ${newContainer.Image}, Image of old Container ${oldContainer.Image}`);
+        if (newContainer.Image !== oldContainer.Image) {
+          logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
+          await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
+        }
+      } else logger.info('Skipping "Image removing"');
     } catch (error) {
       logger.warn(`Removing old Container '${body.hostname}-old' failed: ${error}`);
     }
   }
   plugins.post(body);
+  logger.info(`Deployment is done: ${body.hostname}`);
   res.end(`Deployment is done: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
   const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
-  logger.info(`Stop and remove  '${body.hostname}' Container.`);
+  logger.debug(JSON.stringify(body));
+  logger.info(`Remove '${body.hostname}'.`);
   try {
+    const { data: oldContainer } = await docker.get(`http:/containers/${body.hostname}/json`);
+    logger.info(`Stop and remove  '${body.hostname}' Container.`);
     await docker.delete(`http:/containers/${body.hostname}?force=true`);
+
+    if (body.keepImage === false) {
+      // Remove Image of old Container
+      logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
+      await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
+    } else logger.info('Skipping "Image removing"');
+    logger.info(`Container '${body.hostname}' is stopped.`);
     res.end(`Container '${body.hostname}' is stopped.`);
   } catch (error) {
     if (error.response.status === 404) {
