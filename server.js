@@ -183,16 +183,14 @@ const startApp = async (req, res) => {
 };
 const stopApp = async (req, res) => {
   const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
-  logger.info(`Stop App: ${body.hostname}`);
-  logger.info('Remove Container...');
+  logger.info(`Stop and remove  '${body.hostname}' Container.`);
   try {
     await docker.delete(`http:/containers/${body.hostname}?force=true`);
-    logger.info('Container removed');
-    res.end(`App is stopped: ${body.hostname}`);
+    res.end(`Container '${body.hostname}' is stopped.`);
   } catch (error) {
     if (error.response.status === 404) {
-      logger.info(`App ${body.hostname} not found.`);
-      res.end(`App ${body.hostname} not found.`);
+      logger.info(`Container '${body.hostname}' not found.`);
+      res.end(`Container '${body.hostname}' not found.`);
     } else throw error;
   }
 };
