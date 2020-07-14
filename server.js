@@ -82,7 +82,7 @@ const handleErrors = (fn) => async (req, res) => {
     if (err.name === 'ValidationError') {
       send(res, 400, { message: err.message, errors: err.details });
     } else {
-      plugins.failure(err, await json(req));
+      plugins.failure(err, { ...await json(req), action: req.action });
       send(res, err.statusCode || 500, { message: err.message });
     }
   }
@@ -98,7 +98,7 @@ const checkApiKey = (req) => {
 const startApp = async (req, res) => {
   const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
   logger.debug(JSON.stringify(body));
-  plugins.preDeployment(body);
+  plugins.preDeployment({ ...body, action: req.action });
   logger.info(`Start Deployment: '${body.image}' => '${body.hostname}'`);
   // Check if Container for given Hostname already exists
   let blueGreenDeployment = false;
@@ -109,7 +109,7 @@ const startApp = async (req, res) => {
   } catch (error) {
     if (error.response.status === 404) {
       logger.info(`No existing Container for '${body.hostname}' found. No Replacement needed.`);
-    } else throw error;
+    } else throw createError(500, 'Unkown error', error);
   }
   // Rename existing Container
   if (blueGreenDeployment) {
@@ -124,8 +124,8 @@ const startApp = async (req, res) => {
       await docker.post(`http:/images/create?fromImage=${body.image}`);
       logger.info(`Create Container '${body.hostname}'.`);
     } catch (error) {
-      if (error.response.status === 404) throw createError(404, `Image ${body.image} not found.`, error);
-      else throw error;
+      if (error.response.status === 404) throw createError(404, `Image ${body.image} not found`, error);
+      else throw createError(500, `Pull Image ${body.image} failed due to unkown error`, error);
     }
     // Create Container
     const Labels = {
@@ -152,7 +152,7 @@ const startApp = async (req, res) => {
       logger.warn('Already existing Container will be renamed back.');
       await docker.post(`http:/containers/${body.hostname}-old/rename?name=${body.hostname}`);
     }
-    throw createError(500, `Creating the new Container '${body.hostname}' failed!`, error);
+    throw error;
   }
 
   try {
@@ -167,7 +167,7 @@ const startApp = async (req, res) => {
       logger.warn('Already existing Container will be renamed back.');
       await docker.post(`http:/containers/${body.hostname}-old/rename?name=${body.hostname}`);
     }
-    throw createError(500, `Starting Container '${body.hostname}' failed`, error);
+    throw createError(500, `Starting Container '${body.hostname}' failed due to unkown error`, error);
   }
 
   if (blueGreenDeployment) {
@@ -189,14 +189,14 @@ const startApp = async (req, res) => {
       logger.warn(`Removing old Container '${body.hostname}-old' failed: ${error}`);
     }
   }
-  plugins.postDeployment(body);
+  plugins.postDeployment({ ...body, action: req.action });
   logger.info(`Deployment is done: ${body.hostname}`);
   res.end(`Deployment is done: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
   const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
   logger.debug(JSON.stringify(body));
-  plugins.preTeardown(body);
+  plugins.preTeardown({ ...body, action: req.action });
   logger.info(`Start Teardown: '${body.hostname}'.`);
   try {
     const { data: oldContainer } = await docker.get(`http:/containers/${body.hostname}/json`);
@@ -208,14 +208,13 @@ const stopApp = async (req, res) => {
       logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
       await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
     } else logger.info('Skipping "Image removing"');
-    plugins.postTeardown(body);
+    plugins.postTeardown({ ...body, action: req.action });
     logger.info(`Teardown is done: ${body.hostname}`);
     res.end(`Teardown is done: ${body.hostname}`);
   } catch (error) {
     if (error.response.status === 404) {
-      logger.info(`Teardown failed: Container '${body.hostname}' not found.`);
-      res.end(`Teardown failed: Container '${body.hostname}' not found.`);
-    } else throw error;
+      throw createError(404, `Container '${body.hostname}' not found`, error);
+    } else throw createError(500, `Teardown of '${body.hostname}' failed due to unkown error`, error);
   }
 };
 
@@ -226,10 +225,12 @@ module.exports = handleErrors(async (req, res) => {
   switch (req.url) {
     case '/start':
     case '/deploy':
+      req.action = 'deployment';
       await startApp(req, res);
       break;
     case '/stop':
     case '/teardown':
+      req.action = 'teardown';
       await stopApp(req, res);
       break;
     default:

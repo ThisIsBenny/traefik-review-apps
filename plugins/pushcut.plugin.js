@@ -2,11 +2,25 @@ const axios = require('axios');
 
 const requiredEnvs = ['plugins_pushcut_url'];
 
-const failure = async ({ message }, { hostname, image }) => {
-  global.logger.debug(`PushCut Plugin: Error => ${message}`);
+const failure = async ({ message }, { hostname, image, action }) => {
+  global.logger.debug(`PushCut Plugin: ${action} => ${message}`);
+  let title = '';
+  let text = '';
+  switch (action) {
+    case 'deployment':
+      title = '‼️ Deployment failed';
+      text = `Deployment of the Image '${image}' to '${hostname}' is failed: ${message}.`;
+      break;
+    case 'teardown':
+      title = '‼️ Teardown failed';
+      text = `Teardown of '${hostname}' is failed: ${message}.`;
+      break;
+    default:
+      break;
+  }
   await axios.post(process.env.plugins_pushcut_url, {
-    title: '‼️ Deployment failed',
-    text: `The Deployment of the Image '${image}' to '${hostname}' is failed: ${message}.`,
+    title,
+    text,
   });
 };
 const preDeployment = async ({ hostname, image }) => {
