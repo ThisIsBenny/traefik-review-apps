@@ -76,7 +76,6 @@ const handleErrors = (fn) => async (req, res) => {
   try {
     return await fn(req, res);
   } catch (err) {
-    logger.debug(JSON.stringify(err));
     if (err.response && err.response.data) logger.error(JSON.stringify(err.response.data));
     logger.info(`[${err.statusCode}] ${err.message}`);
     if (err.name === 'ValidationError') {
