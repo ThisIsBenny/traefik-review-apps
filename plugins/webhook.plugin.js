@@ -7,7 +7,7 @@ const failure = async ({ message: errorMessage }, { hostname, image = null, acti
   process.env.plugins_webhook_urls.split(',').forEach(async (url) => {
     await axios.post(String(url).trim(), {
       action,
-      event: 'failure',
+      status: 'failed',
       hostname,
       image,
       errorMessage,
@@ -19,7 +19,7 @@ const preDeployment = async ({ hostname, image }) => {
   process.env.plugins_webhook_urls.split(',').forEach(async (url) => {
     await axios.post(String(url).trim(), {
       action: 'deploymennt',
-      event: 'preDeployment',
+      status: 'started',
       image,
       hostname,
     });
@@ -30,7 +30,7 @@ const postDeployment = async ({ hostname, image }) => {
   process.env.plugins_webhook_urls.split(',').forEach(async (url) => {
     await axios.post(String(url).trim(), {
       action: 'deploymennt',
-      event: 'postDeployment',
+      status: 'success',
       image,
       hostname,
     });
@@ -41,7 +41,7 @@ const preTeardown = async ({ hostname }) => {
   process.env.plugins_webhook_urls.split(',').forEach(async (url) => {
     await axios.post(String(url).trim(), {
       action: 'teardown',
-      event: 'preTeardown',
+      status: 'started',
       hostname,
     });
   });
@@ -51,7 +51,7 @@ const postTeardown = async ({ hostname }) => {
   process.env.plugins_webhook_urls.split(',').forEach(async (url) => {
     await axios.post(String(url).trim(), {
       action: 'teardown',
-      event: 'postTeardown',
+      status: 'success',
       hostname,
     });
   });
