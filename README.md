@@ -1,10 +1,14 @@
-_**Traefik-Review-Apps** — New Review Apps on Demand_
+_**Traefik-Review-Apps** — Review Apps on Demand_
+
+With Traefik-Review-Apps you have the possibilty to deploy your review apps on demand as part of your CI/CD Pipeline.
+Send the Docker Image Name and the Hostname for the Review App to Traefik-Review-Apps.
+Traefik-Review-Apps will pull the image, create a Container with Traefik Router-Settings and start the new Container.
 
 ## Feature
 
 * Deploy your Review App Docker Image via POST Request
-* Add new Docker Image automaticly to to Treafik Network
-* Send ENV and additional Labels with the POST Request
+* Add new Docker Image automatically to to Treafik Network
+* Send Environment Variable and additional Labels with the POST Request
 * Stop and remove Docker Images by Hostname
 
 ## Installalation
@@ -26,9 +30,9 @@ traefik-review-apps:
       traefik_certresolver: mytlschallenge
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik-review-apps:.rule=Host(`deploy.example.com`)
-      - traefik.http.routers.traefik-review-apps:.tls=true
-      - traefik.http.routers.traefik-review-apps:.tls.certresolver=mytlschallenge
+      - traefik.http.routers.traefik-review-apps.rule=Host(`deploy.example.com`)
+      - traefik.http.routers.traefik-review-apps.tls=true
+      - traefik.http.routers.traefik-review-apps.tls.certresolver=mytlschallenge
     networks:
       - traefik-network
     volumes:
