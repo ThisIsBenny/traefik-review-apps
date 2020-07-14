@@ -98,7 +98,7 @@ const checkApiKey = (req) => {
 const startApp = async (req, res) => {
   const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
   logger.debug(JSON.stringify(body));
-  plugins.pre(body);
+  plugins.preDeployment(body);
   logger.info(`Start Deployment: '${body.image}' => '${body.hostname}'`);
   // Check if Container for given Hostname already exists
   let blueGreenDeployment = false;
@@ -189,17 +189,18 @@ const startApp = async (req, res) => {
       logger.warn(`Removing old Container '${body.hostname}-old' failed: ${error}`);
     }
   }
-  plugins.post(body);
+  plugins.postDeployment(body);
   logger.info(`Deployment is done: ${body.hostname}`);
   res.end(`Deployment is done: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
   const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
   logger.debug(JSON.stringify(body));
-  logger.info(`Remove '${body.hostname}'.`);
+  plugins.preTeardown(body);
+  logger.info(`Start Teardown: '${body.hostname}'.`);
   try {
     const { data: oldContainer } = await docker.get(`http:/containers/${body.hostname}/json`);
-    logger.info(`Stop and remove  '${body.hostname}' Container.`);
+    logger.info(`Stop and remove '${body.hostname}' Container.`);
     await docker.delete(`http:/containers/${body.hostname}?force=true`);
 
     if (body.keepImage === false) {
@@ -207,12 +208,13 @@ const stopApp = async (req, res) => {
       logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
       await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
     } else logger.info('Skipping "Image removing"');
-    logger.info(`Container '${body.hostname}' is stopped.`);
-    res.end(`Container '${body.hostname}' is stopped.`);
+    plugins.postTeardown(body);
+    logger.info(`Teardown is done: ${body.hostname}`);
+    res.end(`Teardown is done: ${body.hostname}`);
   } catch (error) {
     if (error.response.status === 404) {
-      logger.info(`Container '${body.hostname}' not found.`);
-      res.end(`Container '${body.hostname}' not found.`);
+      logger.info(`Teardown failed: Container '${body.hostname}' not found.`);
+      res.end(`Teardown failed: Container '${body.hostname}' not found.`);
     } else throw error;
   }
 };
