@@ -2,15 +2,15 @@ const axios = require('axios');
 
 const requiredEnvs = ['plugins_webhook_urls'];
 
-const failure = async ({message: error}, { hostname, image = null, action }) => {
-  global.logger.debug(`webhook Plugin: ${action} => ${error.message}`);
+const failure = async ({ message: errorMessage }, { hostname, image = null, action }) => {
+  global.logger.debug(`webhook Plugin: ${action} => ${errorMessage}`);
   process.env.plugins_webhook_urls.split(',').forEach(async (url) => {
     await axios.post(String(url).trim(), {
       action,
       event: 'failure',
       hostname,
       image,
-      error,
+      errorMessage,
     });
   });
 };

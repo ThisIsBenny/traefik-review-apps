@@ -49,6 +49,15 @@ To use a plugin, the plugin name must be added to the environment variable `plug
 * pushcut
   * environment variables:
     * `plugins_pushcut_url` (required): PushCut URL
+* webhook
+  * environment variables:
+    * `plugins_webhook_urls` (required): comma separated list of urls, e.g. `https://webhook.site/54c1b34c-be49-4a2f-986d-716856ee583f,https://webhook.site/74e307f1-c327-4324-a407-280b116b1933`
+  * Attributes of Webhook POST-Request:
+    * `action` - Possible values: `deployment`, `teardown`
+    * `event` - Possible values: `failure`, `preDepoyment`, `preDepoyment`, `preTeardown`, `postTeardown`
+    * `image` - Only for `action` == `image`
+    * `hostname`
+    * `errorMessage` - Only for `event` == `failure`
 
 ## Usage
 
