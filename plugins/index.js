@@ -22,21 +22,21 @@ const bootstrap = () => {
           global.logger.debug(`Register failure function for ${e.trim()} plugin`);
           failurePlugins.push(plugin.failure);
         }
-        if (typeof plugin.predeployment === 'function') {
-          global.logger.debug(`Register predeployment function for ${e.trim()} plugin`);
-          preDeploymentPlugins.push(plugin.predeployment);
+        if (typeof plugin.preDeployment === 'function') {
+          global.logger.debug(`Register preDeployment function for ${e.trim()} plugin`);
+          preDeploymentPlugins.push(plugin.preDeployment);
         }
-        if (typeof plugin.postdeployment === 'function') {
-          global.logger.debug(`Register postdeployment function for ${e.trim()} plugin`);
-          postDeploymentPlugins.push(plugin.postdeployment);
+        if (typeof plugin.postDeployment === 'function') {
+          global.logger.debug(`Register postDeployment function for ${e.trim()} plugin`);
+          postDeploymentPlugins.push(plugin.postDeployment);
         }
-        if (typeof plugin.preteardown === 'function') {
-          global.logger.debug(`Register preteardown function for ${e.trim()} plugin`);
-          preTeardownPlugins.push(plugin.preteardown);
+        if (typeof plugin.preTeardown === 'function') {
+          global.logger.debug(`Register preTeardown function for ${e.trim()} plugin`);
+          preTeardownPlugins.push(plugin.preTeardown);
         }
-        if (typeof plugin.postteardown === 'function') {
-          global.logger.debug(`Register postteardown function for ${e.trim()} plugin`);
-          postTeardownPlugins.push(plugin.postteardown);
+        if (typeof plugin.postTeardown === 'function') {
+          global.logger.debug(`Register postTeardown function for ${e.trim()} plugin`);
+          postTeardownPlugins.push(plugin.postTeardown);
         }
       } catch (error) {
         global.logger.warn(`${e} Plugin can't be registered: ${error}`);
