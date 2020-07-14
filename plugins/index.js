@@ -10,9 +10,11 @@ const bootstrap = () => {
         global.logger.info(`Register ${e.trim()} plugin`);
         const plugin = require(`./${String(e).trim()}.plugin`); // eslint-disable-line security/detect-non-literal-require, global-require, import/no-dynamic-require
 
+        if (plugin.requiredEnvs) {
         plugin.requiredEnvs.forEach((env) => {
           if (!process.env[String(env)]) throw new Error(`Required ENV ${env} for plugin ${e} is missing!`);
         });
+        }
 
         if (typeof plugin.failure === 'function') {
           global.logger.debug(`Register failure function for ${e.trim()} plugin`);
