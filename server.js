@@ -145,7 +145,6 @@ const startApp = async (req, res) => {
       Env,
       NetworkMode: process.env.traefik_network,
     });
-    logger.info(`Container created: '${body.hostname}'.`);
   } catch (error) {
     logger.error('Creating the new Container failed!');
     if (blueGreenDeployment) {
