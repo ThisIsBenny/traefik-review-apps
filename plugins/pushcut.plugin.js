@@ -24,10 +24,26 @@ const postdeployment = async ({ hostname, image }) => {
     input: `http://${hostname}`,
   });
 };
+const preteardown = async ({ hostname }) => {
+  global.logger.info('Execute pushcut plugin (preteardown)');
+  await axios.post(process.env.plugins_pushcut_url, {
+    title: '🏗 Start Teardown',
+    text: `The Teardown of '${hostname}' is started.`,
+  });
+};
+const postteardown = async ({ hostname }) => {
+  global.logger.info('Execute pushcut plugin (postteardown)');
+  await axios.post(process.env.plugins_pushcut_url, {
+    title: '🚧 Teardown done',
+    text: `The Teardown of '${hostname}' is done.`,
+  });
+};
 
 module.exports = {
   failure,
   predeployment,
   postdeployment,
+  preteardown,
+  postteardown,
   requiredEnvs,
 };
