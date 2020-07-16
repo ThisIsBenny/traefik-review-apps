@@ -1,0 +1,9 @@
+v1.3.0
+-----------------------------------------
+NEW:
+* Plugin Module (#1)
+* PushCut Plugin (#2)
+* MS Teams Plugin (#3)
+* WebBook Plugin (#5)
+* Rollback in case of failed Deployment (#6)
+* Clean up old images
