@@ -64,4 +64,4 @@ release_unstable:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:unstable
     - docker push $CI_REGISTRY_IMAGE:unstable
   only:
-    - /^v([0-9]+)(\.)([0-9]+)(\.)([0-9]+)-(alpha|beta)\.([0-9]+)$/
+    - /^v([0-9]+)(\.)([0-9]+)(\.)([0-9]+)-(alpha|beta|rc)\.([0-9]+)$/
