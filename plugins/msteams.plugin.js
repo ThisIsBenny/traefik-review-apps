@@ -1,111 +1,94 @@
+/* eslint-disable quote-props */
 const axios = require('axios');
 
 const requiredEnvs = ['plugins_msteams_url'];
 
 const failure = async ({ message }, { hostname, image, action }) => {
-  global.logger.debug(`PushCut Plugin: ${action} => ${message}`);
+  global.logger.debug(`msteams Plugin: ${action} => ${message}`);
   let title = '';
   let text = '';
+  let facts = [];
   switch (action) {
     case 'deployment':
       title = '‼️ Deployment failed';
       text = `Deployment of the Image '${image}' to '${hostname}' is failed: ${message}.`;
+      facts = [{ name: 'Hostnname:', value: hostname }, { name: 'Image:', value: image }];
       break;
     case 'teardown':
       title = '‼️ Teardown failed';
       text = `Teardown of '${hostname}' is failed: ${message}.`;
+      facts = [{ name: 'Hostnname:', value: hostname }];
       break;
     default:
       break;
   }
   await axios.post(process.env.plugins_msteams_url, {
-    $schema: 'https://adaptivecards.io/schemas/adaptive-card.json',
-    type: 'AdaptiveCard',
-    version: '1.0',
-    body: [
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    summary: `**${title}**`,
+    sections: [
       {
-        type: 'ColumnSet',
-        columns: [
-          {
-            width: 'stretch',
-            items: [
-              {
-                type: 'TextBlock',
-                text: `**${title}**`,
-              },
-              {
-                type: 'TextBlock',
-                text,
-              },
-            ],
-          },
-        ],
+        activityTitle: `**${title}**`,
+        facts,
+        text,
       },
     ],
   });
 };
 const preDeployment = async ({ hostname, image }) => {
-  global.logger.info('Execute pushcut plugin (preDeployment)');
+  global.logger.info('Execute msteams plugin (preDeployment)');
   await axios.post(process.env.plugins_msteams_url, {
-    $schema: 'https://adaptivecards.io/schemas/adaptive-card.json',
-    type: 'AdaptiveCard',
-    version: '1.0',
-    body: [
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    summary: '**🏗 Start Deployment**',
+    sections: [
       {
-        type: 'ColumnSet',
-        columns: [
+        activityTitle: '**🏗 Start Deployment**',
+        facts: [
           {
-            width: 'stretch',
-            items: [
-              {
-                type: 'TextBlock',
-                text: '**🏗 Start Deployment**',
-              },
-              {
-                type: 'TextBlock',
-                text: `The Deployment of the Image '${image}' to '${hostname}' is started.`,
-              },
-            ],
+            name: 'Hostnname:',
+            value: hostname,
+          },
+          {
+            name: 'Image:',
+            value: image,
           },
         ],
+        text: `The Deployment of the Image '${image}' to '${hostname}' is started.`,
       },
     ],
   });
 };
 const postDeployment = async ({ hostname, image }) => {
-  global.logger.info('Execute pushcut plugin (postDeployment)');
+  global.logger.info('Execute msteams plugin (postDeployment)');
   await axios.post(process.env.plugins_msteams_url, {
-    $schema: 'https://adaptivecards.io/schemas/adaptive-card.json',
-    type: 'AdaptiveCard',
-    version: '1.0',
-    body: [
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    summary: '**🚚 Deployment done**',
+    sections: [
       {
-        type: 'ColumnSet',
-        columns: [
+        activityTitle: '**🚚 Deployment done**',
+        facts: [
           {
-            width: 'stretch',
-            items: [
-              {
-                type: 'TextBlock',
-                text: '**🚚 Deployment done**',
-              },
-              {
-                type: 'TextBlock',
-                text: `The Deployment of the Image '${image}' to '${hostname}' is done.`,
-              },
-            ],
+            name: 'Hostnname:',
+            value: hostname,
+          },
+          {
+            name: 'Image:',
+            value: image,
           },
         ],
+        text: `The Deployment of the Image '${image}' to '${hostname}' is done.`,
       },
+    ],
+    potentialAction: [
       {
-        type: 'ActionSet',
-        spacing: 'padding',
-        actions: [
+        '@type': 'OpenUri',
+        name: 'Show Deployment',
+        targets: [
           {
-            type: 'Action.OpenUrl',
-            id: 'open',
-            title: 'Show Deployment',
-            url: `http://${hostname}`,
+            os: 'default',
+            uri: `http://${hostname}`,
           },
         ],
       },
@@ -113,61 +96,41 @@ const postDeployment = async ({ hostname, image }) => {
   });
 };
 const preTeardown = async ({ hostname }) => {
-  global.logger.info('Execute pushcut plugin (preTeardown)');
+  global.logger.info('Execute msteams plugin (preTeardown)');
   await axios.post(process.env.plugins_msteams_url, {
-    $schema: 'https://adaptivecards.io/schemas/adaptive-card.json',
-    type: 'AdaptiveCard',
-    version: '1.0',
-    body: [
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    summary: '**🏗 Start Teardown**',
+    sections: [
       {
-        type: 'ColumnSet',
-        columns: [
+        activityTitle: '**🏗 Start Teardown**',
+        facts: [
           {
-            width: 'stretch',
-            items: [
-              {
-                type: 'TextBlock',
-                text: '**🏗 Start Teardown**',
-              },
-              {
-                type: 'TextBlock',
-                text: `The Teardown of '${hostname}' is started.`,
-              },
-            ],
+            name: 'Hostnname:',
+            value: hostname,
           },
         ],
+        text: `The Teardown of '${hostname}' is started.`,
       },
     ],
   });
 };
 const postTeardown = async ({ hostname }) => {
-  global.logger.info('Execute pushcut plugin (postTeardown)');
+  global.logger.info('Execute msteams plugin (postTeardown)');
   await axios.post(process.env.plugins_msteams_url, {
-    title: '🚧 Teardown done',
-    text: `The Teardown of '${hostname}' is done.`,
-  });
-  await axios.post(process.env.plugins_msteams_url, {
-    $schema: 'https://adaptivecards.io/schemas/adaptive-card.json',
-    type: 'AdaptiveCard',
-    version: '1.0',
-    body: [
+    '@type': 'MessageCard',
+    '@context': 'https://schema.org/extensions',
+    summary: '**🚧 Teardown done**',
+    sections: [
       {
-        type: 'ColumnSet',
-        columns: [
+        activityTitle: '**🚧 Teardown done**',
+        facts: [
           {
-            width: 'stretch',
-            items: [
-              {
-                type: 'TextBlock',
-                text: '**🚧 Teardown done**',
-              },
-              {
-                type: 'TextBlock',
-                text: `The Teardown of '${hostname}' is done.`,
-              },
-            ],
+            name: 'Hostnname:',
+            value: hostname,
           },
         ],
+        text: `The Teardown of '${hostname}' is done.`,
       },
     ],
   });
