@@ -81,7 +81,7 @@ const handleErrors = (fn) => async (req, res) => {
     if (err.name === 'ValidationError') {
       send(res, 400, { message: err.message, errors: err.details });
     } else {
-      plugins.failure(err, { ...await json(req), action: req.action });
+      await plugins.failure(err, { ...await json(req), action: req.action });
       send(res, err.statusCode || 500, { message: err.message });
     }
   }
@@ -97,7 +97,7 @@ const checkApiKey = (req) => {
 const startApp = async (req, res) => {
   const body = await startSchema.validateAsync(await json(req), { abortEarly: false });
   logger.debug(JSON.stringify(body));
-  plugins.preDeployment({ ...body, action: req.action });
+  await plugins.preDeployment({ ...body, action: req.action });
   logger.info(`Start Deployment: '${body.image}' => '${body.hostname}'`);
   // Check if Container for given Hostname already exists
   let blueGreenDeployment = false;
@@ -188,14 +188,14 @@ const startApp = async (req, res) => {
       logger.warn(`Removing old Container '${body.hostname}-old' failed: ${error}`);
     }
   }
-  plugins.postDeployment({ ...body, action: req.action });
+  await plugins.postDeployment({ ...body, action: req.action });
   logger.info(`Deployment is done: ${body.hostname}`);
   res.end(`Deployment is done: ${body.hostname}`);
 };
 const stopApp = async (req, res) => {
   const body = await stopSchema.validateAsync(await json(req), { abortEarly: false });
   logger.debug(JSON.stringify(body));
-  plugins.preTeardown({ ...body, action: req.action });
+  await plugins.preTeardown({ ...body, action: req.action });
   logger.info(`Start Teardown: '${body.hostname}'.`);
   try {
     const { data: oldContainer } = await docker.get(`http:/containers/${body.hostname}/json`);
@@ -207,7 +207,7 @@ const stopApp = async (req, res) => {
       logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
       await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
     } else logger.info('Skipping "Image removing"');
-    plugins.postTeardown({ ...body, action: req.action });
+    await plugins.postTeardown({ ...body, action: req.action });
     logger.info(`Teardown is done: ${body.hostname}`);
     res.end(`Teardown is done: ${body.hostname}`);
   } catch (error) {

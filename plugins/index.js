@@ -46,49 +46,49 @@ const bootstrap = () => {
   }
 };
 
-const failure = (error, reqBody) => {
+const failure = async (error, reqBody) => {
   try {
-    failurePlugins.forEach((p) => {
-      p(error, reqBody);
-    });
+    await Promise.all(failurePlugins.map(async (p) => {
+      await p(error, reqBody);
+    }));
   } catch (e) {
-    global.logger.error(e);
+    global.logger.error(`Plugin execution (failure) failed: ${e.message} ${e.response.data || ''}`);
   }
 };
-const preDeployment = (reqBody) => {
+const preDeployment = async (reqBody) => {
   try {
-    preDeploymentPlugins.forEach((p) => {
-      p(reqBody);
-    });
+    await Promise.all(preDeploymentPlugins.map(async (p) => {
+      await p(reqBody);
+    }));
   } catch (e) {
-    global.logger.error(e);
+    global.logger.error(`Plugin execution (preDeployment) failed: ${e.message} ${e.response.data || ''}`);
   }
 };
-const postDeployment = (reqBody) => {
+const postDeployment = async (reqBody) => {
   try {
-    postDeploymentPlugins.forEach((p) => {
-      p(reqBody);
-    });
+    await Promise.all(postDeploymentPlugins.map(async (p) => {
+      await p(reqBody);
+    }));
   } catch (e) {
-    global.logger.error(e);
+    global.logger.error(`Plugin execution (postDeployment) failed: ${e.message} ${e.response.data || ''}`);
   }
 };
-const preTeardown = (reqBody) => {
+const preTeardown = async (reqBody) => {
   try {
-    preTeardownPlugins.forEach((p) => {
-      p(reqBody);
-    });
+    await Promise.all(preTeardownPlugins.map(async (p) => {
+      await p(reqBody);
+    }));
   } catch (e) {
-    global.logger.error(e);
+    global.logger.error(`Plugin execution (preTeardown) failed: ${e.message} ${e.response.data || ''}`);
   }
 };
-const postTeardown = (reqBody) => {
+const postTeardown = async (reqBody) => {
   try {
-    postTeardownPlugins.forEach((p) => {
-      p(reqBody);
-    });
+    await Promise.all(postTeardownPlugins.map(async (p) => {
+      await p(reqBody);
+    }));
   } catch (e) {
-    global.logger.error(e);
+    global.logger.error(`Plugin execution (postTeardown) failed: ${e.message} ${e.response.data || ''}`);
   }
 };
 
