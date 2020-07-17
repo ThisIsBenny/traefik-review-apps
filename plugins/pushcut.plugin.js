@@ -1,5 +1,4 @@
 const axios = require('axios');
-const os = require('os');
 
 const requiredEnvs = ['plugins_pushcut_url'];
 
