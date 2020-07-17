@@ -1,5 +1,5 @@
 const axios = require('axios');
-
+const os = require('os');
 const requiredEnvs = ['plugins_pushcut_url'];
 
 const failure = async ({ message }, { hostname, image, action }) => {
@@ -42,6 +42,23 @@ const postDeployment = async ({ hostname, image }) => {
       {
         name: `Open ${hostname}`,
         url: `http://${hostname}`,
+      },
+      {
+        name: `Stop ${hostname}`,
+        url: `https://${os.hostname}/teardown`,
+        urlBackgroundOptions: {
+          httpMethod: 'POST',
+          httpContenType: 'application/json',
+          httpHeader: [
+            {
+              key: 'Authorization',
+              value: process.env.apikey,
+            },
+          ],
+          httpBody: JSON.stringify({
+            hostname,
+          }),
+        },
       },
     ],
   });
