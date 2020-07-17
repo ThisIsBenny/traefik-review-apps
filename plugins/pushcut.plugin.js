@@ -1,5 +1,6 @@
 const axios = require('axios');
 const os = require('os');
+
 const requiredEnvs = ['plugins_pushcut_url'];
 
 const failure = async ({ message }, { hostname, image, action }) => {
