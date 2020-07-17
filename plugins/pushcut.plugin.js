@@ -44,23 +44,6 @@ const postDeployment = async ({ hostname, image }) => {
         name: `Open ${hostname}`,
         url: `http://${hostname}`,
       },
-      {
-        name: `Stop ${hostname}`,
-        url: `https://${os.hostname}/teardown`,
-        urlBackgroundOptions: {
-          httpMethod: 'POST',
-          httpContenType: 'application/json',
-          httpHeader: [
-            {
-              key: 'Authorization',
-              value: process.env.apikey,
-            },
-          ],
-          httpBody: {
-            hostname,
-          },
-        },
-      },
     ],
   });
 };
