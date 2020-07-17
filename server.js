@@ -186,7 +186,11 @@ const startApp = async (req, res) => {
         logger.debug(`Ìmage of new Container ${newContainer.Image}, Image of old Container ${oldContainer.Image}`);
         if (newContainer.Image !== oldContainer.Image) {
           logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
-          await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
+          try {
+            await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
+          } catch (error) {
+            logger.error(`Revmoving Image failed: ${error.response.data}`);
+          }
         }
       } else logger.info('Skipping "Image removing"');
     } catch (error) {
@@ -210,7 +214,11 @@ const stopApp = async (req, res) => {
     if (body.keepImage === false) {
       // Remove Image of old Container
       logger.info(`Remove '${oldContainer.Image.replace('sha256:', '')}' Image.`);
-      await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
+      try {
+        await docker.delete(`http:/images/${oldContainer.Image.replace('sha256:', '')}`);
+      } catch (error) {
+        logger.error(`Revmoving Image failed: ${error.response.data}`);
+      }
     } else logger.info('Skipping "Image removing"');
     await plugins.postTeardown({ ...body, action: req.action });
     logger.info(`Teardown is done: ${body.hostname}`);
