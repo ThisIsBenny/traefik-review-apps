@@ -50,6 +50,11 @@ To use a plugin, the plugin name must be added to the environment variable `plug
 * pushcut
   * environment variables:
     * `plugins_pushcut_url` (required): PushCut URL
+    * `plugins_pushcut_predeployment_image`: URL for a Image which will be send with the predeployment notification
+    * `plugins_pushcut_posteployment_image`: URL for a Image which will be send with the posteployment notification
+    * `plugins_pushcut_preteardown_image`: URL for a Image which will be send with the preteardown notification
+    * `plugins_pushcut_postteardown_image`: URL for a Image which will be send with the postteardown notification
+    * `plugins_pushcut_failure_image`: URL for a Image which will be send with the failure notification
 * msteams
   * environment variables:
     * `plugins_msteams_url` (required): [MS Teams Webhook-Connector URL](https://docs.microsoft.com/en-us/outlook/actionable-messages/send-via-connectors)
