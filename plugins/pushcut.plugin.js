@@ -56,9 +56,9 @@ const postDeployment = async ({ hostname, image }) => {
               value: process.env.apikey,
             },
           ],
-          httpBody: JSON.stringify({
+          httpBody: {
             hostname,
-          }),
+          },
         },
       },
     ],
