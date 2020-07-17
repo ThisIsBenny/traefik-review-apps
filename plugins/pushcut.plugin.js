@@ -21,21 +21,26 @@ const failure = async ({ message }, { hostname, image, action }) => {
   await axios.post(process.env.plugins_pushcut_url, {
     title,
     text,
+    image: process.env.plugins_pushcut_failure_image || '',
   });
 };
 const preDeployment = async ({ hostname, image }) => {
   global.logger.info('Execute pushcut plugin (preDeployment)');
   await axios.post(process.env.plugins_pushcut_url, {
-    title: '🏗 Start Deployment',
+    title: '🚀 Start Deployment',
     text: `The Deployment of the Image '${image}' to '${hostname}' is started.`,
+    image: process.env.plugins_pushcut_predeployment_image || '',
   });
 };
 const postDeployment = async ({ hostname, image }) => {
   global.logger.info('Execute pushcut plugin (postDeployment)');
   await axios.post(process.env.plugins_pushcut_url, {
-    title: '🚚 Deployment done',
+    title: '🛰 Deployment done',
     text: `The Deployment of the Image '${image}' to '${hostname}' is done.`,
-    input: `http://${hostname}`,
+    image: process.env.plugins_pushcut_postdeployment_image || '',
+    defaultAction: {
+      url: `http://${hostname}`,
+    },
   });
 };
 const preTeardown = async ({ hostname }) => {
@@ -43,6 +48,7 @@ const preTeardown = async ({ hostname }) => {
   await axios.post(process.env.plugins_pushcut_url, {
     title: '🏗 Start Teardown',
     text: `The Teardown of '${hostname}' is started.`,
+    image: process.env.plugins_pushcut_preteardown_image || '',
   });
 };
 const postTeardown = async ({ hostname }) => {
@@ -50,6 +56,7 @@ const postTeardown = async ({ hostname }) => {
   await axios.post(process.env.plugins_pushcut_url, {
     title: '🚧 Teardown done',
     text: `The Teardown of '${hostname}' is done.`,
+    image: process.env.plugins_pushcut_postteardown_image || '',
   });
 };
 
