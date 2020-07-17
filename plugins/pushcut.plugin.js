@@ -38,9 +38,12 @@ const postDeployment = async ({ hostname, image }) => {
     title: '🛰 Deployment done',
     text: `The Deployment of the Image '${image}' to '${hostname}' is done.`,
     image: process.env.plugins_pushcut_postdeployment_image || '',
-    defaultAction: {
-      url: `http://${hostname}`,
-    },
+    actions: [
+      {
+        name: `Open ${hostname}`,
+        url: `http://${hostname}`,
+      },
+    ],
   });
 };
 const preTeardown = async ({ hostname }) => {
