@@ -40,10 +40,10 @@ const preDeployment = async ({ hostname, image }) => {
   await axios.post(process.env.plugins_msteams_url, {
     '@type': 'MessageCard',
     '@context': 'https://schema.org/extensions',
-    summary: '**🏗 Start Deployment**',
+    summary: '**🚀 Start Deployment**',
     sections: [
       {
-        activityTitle: '**🏗 Start Deployment**',
+        activityTitle: '**🚀 Start Deployment**',
         facts: [
           {
             name: 'Hostnname:',
@@ -64,10 +64,10 @@ const postDeployment = async ({ hostname, image }) => {
   await axios.post(process.env.plugins_msteams_url, {
     '@type': 'MessageCard',
     '@context': 'https://schema.org/extensions',
-    summary: '**🚚 Deployment done**',
+    summary: '**🛰 Deployment done**',
     sections: [
       {
-        activityTitle: '**🚚 Deployment done**',
+        activityTitle: '**🛰 Deployment done**',
         facts: [
           {
             name: 'Hostnname:',
