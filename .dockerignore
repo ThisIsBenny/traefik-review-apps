@@ -1,0 +1,53 @@
+# Ignore node modules
+node_modules
+node_modules/
+/node_modules
+/node_modules-global
+
+.map
+
+yarn-error.log
+npm-debug*
+
+grunt-uglify-cache.json
+grunt-uglify-new-sales-flow-cache.json
+
+grunt/dependencytree
+grunt/dependencytree/
+grunt/dependencytree/dependencytree.json
+
+# Ignore IDE stuff
+/.vs-code
+/.vscode
+/.idea
+/.project
+*.sublime-project
+*.sublime-workspace
+
+# Ignore caches
+/.sass-cache
+/.cache
+/.tscache
+grunt-uglify-cache.json
+
+# Ignore .DS_store file
+.DS_Store
+
+# Ignore things which should not be in a repo at all
+*.zip
+*.exe
+*.map.js
+*.map.css
+
+# Ignore log files
+npm-debug.log
+log.txt
+*.log
+temp
+grunt-uglify-new-sales-flow-cache.json
+out/chrome/
+
+.env
+.eslintrc.json
+.gitignore
+.gitlab-ci.yml
